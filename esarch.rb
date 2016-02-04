@@ -40,6 +40,7 @@ class Esarch
   end
 
   def should_ignore?(tweet)
+    return true if redis.sismember('esarch:banned_user_ids', tweet.user.id)
     return true if tweet.user.name =~ TABOO_NAME_REGEX
     return true if tweet.user.screen_name =~ TABOO_NAME_REGEX
     return true if tweet.text.scan(/@(\S+)/).flatten.any? { |screen_name| screen_name =~ TABOO_NAME_REGEX }
