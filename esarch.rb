@@ -40,11 +40,18 @@ class Esarch
   end
 
   def should_ignore?(tweet)
+    taboo_tweet?(tweet) || junk_tweet?(tweet)
+  end
+
+  def taboo_tweet?(tweet)
     return true if redis.sismember('esarch:banned_user_ids', tweet.user.id)
     return true if tweet.user.name =~ TABOO_NAME_REGEX
     return true if tweet.user.screen_name =~ TABOO_NAME_REGEX
     return true if tweet.text.scan(/@(\S+)/).flatten.any? { |screen_name| screen_name =~ TABOO_NAME_REGEX }
-    return true if TABOO_WORDS.any? { |taboo_word| tweet.text.include?(taboo_word) }
+    TABOO_WORDS.any? { |taboo_word| tweet.text.include?(taboo_word) }
+  end
+
+  def junk_tweet?(tweet)
     return false if tweet.urls.any? { |data| data.expanded_url.to_s =~ /esa\.io/ }
     !(tweet.text =~ REQUIRED_REGEX)
   end
