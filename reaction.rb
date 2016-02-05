@@ -2,6 +2,7 @@ require 'redis'
 require 'twitter'
 require 'slack'
 
+# Make it easy to check log on Papertrail addon
 $stdout.sync = true
 
 Slack.configure do |config|
@@ -15,6 +16,7 @@ class Reaction
       puts '[Slack Real Time Messaging API] Successfully connected.'
     end
 
+    # https://api.slack.com/events/reaction_added
     client.on :reaction_added do |data|
       on_reaction_added(data)
     end
@@ -30,18 +32,23 @@ class Reaction
       message = fetch_message_for(data['item'])
       puts 'message:'
       p message
+
+      # ignore reaction for file
       return unless message['type'] == 'message'
 
       status_ids = message['text'].scan(%r{twitter.com/\S+/status/(\d+)}).flatten
 
       print 'reaction_name: '
+      # F**K: data.reaction for 1st emoji, data.reactions for rest
       puts reaction_name = data['reaction'] || data['reactions'].last['name']
 
       if reaction_name =~ /no_/
+        # Do not notify tweets from this user anymore
         puts "[will ban] #{message['text']}"
         ban_users_from(status_ids)
         puts "[banned] #{message['text']}"
       else
+        # Add favorite to the tweet
         puts "[will favorite] #{message['text']}"
         favorite(status_ids)
         puts "[favorited] #{message['text']}"
@@ -53,6 +60,8 @@ class Reaction
 
   def ban_users_from(status_ids)
     users_ids = twitter_client.statuses(status_ids).map { |t| t.user.id }
+
+    # for esarch.rb
     redis.sadd 'esarch:banned_user_ids', users_ids
   end
 
@@ -61,6 +70,7 @@ class Reaction
   end
 
   def fetch_message_for(item)
+    # https://api.slack.com/methods/channels.history
     channels_history = Slack.client.channels_history(
       channel: item['channel'],
       latest: item['ts'],
@@ -71,6 +81,7 @@ class Reaction
   end
 
   def twitter_client
+    # need Read/Write access
     @twitter_client ||= Twitter::REST::Client.new do |config|
       config.consumer_key        = ENV['TWITTER_API_KEY']
       config.consumer_secret     = ENV['TWITTER_API_SECRET']
@@ -88,6 +99,7 @@ Thread.new do
   Reaction.new.listen!
 end
 
+# for keep alive
 require 'sinatra'
 set :port, ENV['PORT'] || 4567
 get '/' do
