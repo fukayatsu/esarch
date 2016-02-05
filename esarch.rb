@@ -45,6 +45,7 @@ class Esarch
     return true if tweet.user.screen_name =~ TABOO_NAME_REGEX
     return true if tweet.text.scan(/@(\S+)/).flatten.any? { |screen_name| screen_name =~ TABOO_NAME_REGEX }
     return true if TABOO_WORDS.any? { |taboo_word| tweet.text.include?(taboo_word) }
+    return false if tweet.urls.any? { |data| data.expanded_url.to_s =~ /esa\.io/ }
     !(tweet.text =~ REQUIRED_REGEX)
   end
 
