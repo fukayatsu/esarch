@@ -1,16 +1,14 @@
 # esarch
 
-## Tweet captured by the query
+## 1. Tweet captured by the query
 
 <img width="613" alt="ss 2016-02-05 at 15 11 30" src="https://cloud.githubusercontent.com/assets/1041857/12839237/c48f2090-cc1a-11e5-93cb-c856bce8dde6.png">
 
-## Notify to slack, and if you add a Emoji Reaction...
+## 2. Notify to slack, and if you add a Emoji Reaction...
 <img width="491" alt="ss 2016-02-05 at 15 10 01" src="https://cloud.githubusercontent.com/assets/1041857/12839238/c4a75bce-cc1a-11e5-9160-6325aefaffe4.png">
 
-## Then, automatically favorite the tweet
+## 3. Automatically favorite the tweet
 <img width="609" alt="ss 2016-02-05 at 15 10 19" src="https://cloud.githubusercontent.com/assets/1041857/12839236/c46c9f2a-cc1a-11e5-9cc2-bfb60d894068.png">
-
-
 
 # Requirements
 - Heroku
