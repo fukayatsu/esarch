@@ -24,11 +24,11 @@ class Esarch
                                    result_type: 'recent',
                                    count:       BATCH_SIZE,
                                    since_id:    since_id)
-    tweets.take(BATCH_SIZE).reverse
+    tweets.take(BATCH_SIZE)
   end
 
   def notify(tweets)
-    tweets.each { |tweet| notify_or_ignore(tweet) }
+    tweets.reverse.each { |tweet| notify_or_ignore(tweet) }
   end
 
   def notify_or_ignore(tweet)
