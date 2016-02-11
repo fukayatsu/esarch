@@ -24,7 +24,7 @@ class Esarch
                                    result_type: 'recent',
                                    count:       BATCH_SIZE,
                                    since_id:    since_id)
-    tweets.take(BATCH_SIZE)
+    tweets.take(BATCH_SIZE).reverse
   end
 
   def notify(tweets)
