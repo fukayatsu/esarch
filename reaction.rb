@@ -1,6 +1,7 @@
 require 'redis'
 require 'twitter'
 require 'slack'
+require 'octokit'
 
 # Make it easy to check log on Papertrail addon
 $stdout.sync = true
@@ -29,9 +30,9 @@ class Reaction
     puts '[on_reaction_added]'
     p data
     begin
-      message = fetch_message_for(data['item'])
+      item = data['item']
       puts 'message:'
-      p message
+      p message = fetch_message_for(item)
 
       # ignore reaction for file
       return unless message['type'] == 'message'
@@ -42,11 +43,16 @@ class Reaction
       # F**K: data.reaction for 1st emoji, data.reactions for rest
       puts reaction_name = data['reaction'] || data['reactions'].last['name']
 
-      if reaction_name =~ /no_/
+      case reaction_name
+      when /no_/
         # Do not notify tweets from this user anymore
         puts "[will ban] #{message['text']}"
         ban_users_from(status_ids)
         puts "[banned] #{message['text']}"
+      when 'octocat'
+        puts "[will create issue] #{message['text']}"
+        create_issue_or_ignore_from(item['channel'], item['ts'], message, ENV['GITHUB_REPOSITORY'])
+        puts "[created issue] #{message['text']}"
       else
         # Add favorite to the tweet
         puts "[will favorite] #{message['text']}"
@@ -65,6 +71,27 @@ class Reaction
     redis.sadd 'esarch:banned_user_ids', users_ids
   end
 
+  def create_issue_or_ignore_from(channel, ts, message, repo)
+    message_uid = "#{channel}:#{ts}"
+    return if redis.sismember 'issue_created_messages', message_uid
+    title = body = message['text']
+    if message['attachments']
+      message['attachments'].each do |attachment|
+        text = attachment['text']
+        next unless text
+        body += "\n\n #{text}"
+        title = text
+      end
+    end
+
+    body += "\n\n#{archives_link(channel, ts)}"
+
+    title = "[esarch] #{title[0..30]}"
+
+    github_client.create_issue(repo, title, body, labels: 'esarch')
+    redis.sadd 'issue_created_messages', message_uid
+  end
+
   def favorite(status_ids)
     status_ids.each { |status_id| twitter_client.favorite(status_id) }
   end
@@ -80,6 +107,19 @@ class Reaction
     channels_history['messages'].first
   end
 
+  def channel_name_for(channel_id)
+    channels_info = Slack.client.channels_info(channel: channel_id)
+    channels_info['channel']['name']
+  end
+
+  def host
+    Slack.client.auth_test['url']
+  end
+
+  def archives_link(channel_id, ts)
+    "#{host}archives/#{channel_name_for(channel_id)}/p#{ts.delete('.')}"
+  end
+
   def twitter_client
     # need Read/Write access
     @twitter_client ||= Twitter::REST::Client.new do |config|
@@ -88,6 +128,10 @@ class Reaction
       config.access_token        = ENV['TWITTER_ACCESS_TOKEN']
       config.access_token_secret = ENV['TWITTER_ACCESS_TOKEN_SECRET']
     end
+  end
+
+  def github_client
+    @github_client ||= Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
   end
 
   def redis
