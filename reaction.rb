@@ -47,8 +47,13 @@ class Reaction
       when /no_/
         # Do not notify tweets from this user anymore
         puts "[will ban] #{message['text']}"
-        ban_users_from(status_ids)
+        puts ban_users_from(status_ids)
         puts "[banned] #{message['text']}"
+      when 'innocent'
+        # Unban user
+        puts "[will unban] #{message['text']}"
+        puts unban_users_from(status_ids)
+        puts "[unbanned] #{message['text']}"
       when 'octocat'
         puts "[will create issue] #{message['text']}"
         create_issue_or_ignore_from(item['channel'], item['ts'], message, ENV['GITHUB_REPOSITORY'])
@@ -69,6 +74,13 @@ class Reaction
 
     # for esarch.rb
     redis.sadd 'esarch:banned_user_ids', users_ids
+  end
+
+  def unban_users_from(status_ids)
+    users_ids = twitter_client.statuses(status_ids).map { |t| t.user.id }
+
+    # for esarch.rb
+    redis.srem 'esarch:banned_user_ids', users_ids
   end
 
   def create_issue_or_ignore_from(channel, ts, message, repo)
