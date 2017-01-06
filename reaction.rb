@@ -2,6 +2,7 @@ require 'redis'
 require 'twitter'
 require 'slack'
 require 'octokit'
+require 'esa'
 
 # Make it easy to check log on Papertrail addon
 $stdout.sync = true
@@ -58,6 +59,10 @@ class Reaction
         puts "[will create issue] #{message['text']}"
         create_issue_or_ignore_from(item['channel'], item['ts'], message, ENV['GITHUB_REPOSITORY'])
         puts "[created issue] #{message['text']}"
+      when 'esaise'
+        puts "[will esaise] #{message['text']}"
+        esaise(item, message)
+        puts "[esaised] #{message['text']}"
       else
         # Add favorite to the tweet
         puts "[will favorite] #{message['text']}"
@@ -108,6 +113,19 @@ class Reaction
     status_ids.each { |status_id| twitter_client.favorite(status_id) }
   end
 
+  def esaise(item, message)
+    link = archives_link(item['channel'], item['ts'])
+    posts_result = esa_client.posts(q: link)
+    if posts_result.body['total_count'].zero?
+      body_md = "from: #{link}\n\n"
+      create_result = esa_client.create_post(name: message['text'][0..30].tr('/', '_'), category: 'esaise', user: 'esa_bot', body_md: body_md)
+      msg = "created: #{create_result.body['url']}"
+    else
+      msg = posts_result.body['posts'].map{ |post| "#{post['full_name']} #{post['url']}" }.join("\n")
+    end
+    slack_rest_client.chat_postMessage(channel: item['channel'], text: msg, username: 'esaise', icon_emoji: ':esaise:', as_user: false)
+  end
+
   def fetch_message_for(item)
     # https://api.slack.com/methods/channels.history
     channels_history = Slack.client.channels_history(
@@ -140,6 +158,14 @@ class Reaction
       config.access_token        = ENV['TWITTER_ACCESS_TOKEN']
       config.access_token_secret = ENV['TWITTER_ACCESS_TOKEN_SECRET']
     end
+  end
+
+  def slack_rest_client
+    @slack_rest_client ||= Slack::Client.new
+  end
+
+  def esa_client
+    @esa_client ||= Esa::Client.new(access_token: ENV['ESA_TOKEN'], current_team: ENV['ESA_TEAM'])
   end
 
   def github_client
