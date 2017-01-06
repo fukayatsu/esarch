@@ -8,6 +8,7 @@ gem 'slack-notifier'
 gem 'slack-api'
 gem 'sinatra'
 gem 'octokit'
+gem 'esa'
 
 group :development do
   gem 'pry'
