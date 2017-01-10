@@ -117,7 +117,7 @@ class Reaction
     link = archives_link(item['channel'], item['ts'])
     posts_result = esa_client.posts(q: link)
     if posts_result.body['total_count'].zero?
-      body_md = "from: #{link}\n\n"
+      body_md = "from: #{link}\n\n#{message['text']}"
       create_result = esa_client.create_post(name: message['text'][0..30].tr('/', '_'), category: 'esaise', user: 'esa_bot', body_md: body_md)
       msg = "created: #{create_result.body['url']}"
     else
