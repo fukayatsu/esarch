@@ -68,6 +68,11 @@ class Reaction
         puts "[will reply_done] #{message['text']}"
         reply_done
         puts "[reply_done] #{message['text']}"
+      when 'rt'
+        # ReTweet the tweet
+        puts "[will retweet] #{message['text']}"
+        retweet(status_ids)
+        puts "[retweeted] #{message['text']}"
       else
         # Add favorite to the tweet
         puts "[will favorite] #{message['text']}"
@@ -116,6 +121,10 @@ class Reaction
 
   def favorite(status_ids)
     status_ids.each { |status_id| twitter_client.favorite(status_id) }
+  end
+
+  def retweet(status_ids)
+    status_ids.each { |status_id| twitter_client.retweet(status_id) }
   end
 
   def reply_done
