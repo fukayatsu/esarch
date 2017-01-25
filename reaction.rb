@@ -3,6 +3,7 @@ require 'twitter'
 require 'slack'
 require 'octokit'
 require 'esa'
+require 'net/http'
 
 # Make it easy to check log on Papertrail addon
 $stdout.sync = true
@@ -63,6 +64,10 @@ class Reaction
         puts "[will esaise] #{message['text']}"
         esaise(item, message)
         puts "[esaised] #{message['text']}"
+      when /kaesita|kaeshita/
+        puts "[will reply_done] #{message['text']}"
+        reply_done
+        puts "[reply_done] #{message['text']}"
       else
         # Add favorite to the tweet
         puts "[will favorite] #{message['text']}"
@@ -111,6 +116,10 @@ class Reaction
 
   def favorite(status_ids)
     status_ids.each { |status_id| twitter_client.favorite(status_id) }
+  end
+
+  def reply_done
+    puts Net::HTTP.get(URI.parse('https://slack-tori.herokuapp.com/reply_done'))
   end
 
   def esaise(item, message)
