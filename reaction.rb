@@ -68,7 +68,7 @@ class Reaction
         puts "[will reply_done] #{message['text']}"
         reply_done
         puts "[reply_done] #{message['text']}"
-      when 'rt', 'repeat'
+      when 'rt', 'repeat', 'retweet'
         # ReTweet the tweet
         puts "[will retweet] #{message['text']}"
         retweet(status_ids)
