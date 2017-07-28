@@ -128,7 +128,7 @@ class Reaction
   end
 
   def reply_done
-    puts Net::HTTP.get(URI.parse('https://slack-tori.herokuapp.com/reply_done'))
+    puts Net::HTTP.get(URI.parse(ENV['REPLY_HOOK_URL']))
   end
 
   def esaise(item, message)
