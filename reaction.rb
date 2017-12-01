@@ -14,7 +14,7 @@ end
 
 class Reaction
   def listen!
-    client = Slack.realtime
+    client = Slack::RealTime::Client.new
     client.on :hello do
       puts '[Slack Real Time Messaging API] Successfully connected.'
     end
@@ -23,7 +23,7 @@ class Reaction
     client.on :reaction_added do |data|
       on_reaction_added(data)
     end
-    client.start
+    client.start_async
   end
 
   private
@@ -44,6 +44,12 @@ class Reaction
       print 'reaction_name: '
       # F**K: data.reaction for 1st emoji, data.reactions for rest
       puts reaction_name = data['reaction'] || data['reactions'].last['name']
+
+
+      all_reacted_reactions = message['reactions'].select { |r| r['count'] == 3 }
+      if all_reacted_reactions.any? { |r| r['name'] == reaction_name }
+        notify_notify_all_reacted(item, reaction_name)
+      end
 
       case reaction_name
       when /no_/
@@ -141,12 +147,12 @@ class Reaction
     else
       msg = posts_result.body['posts'].map{ |post| "#{post['full_name']} #{post['url']}" }.join("\n")
     end
-    slack_rest_client.chat_postMessage(channel: item['channel'], text: msg, username: 'esaise', icon_emoji: ':esaise:', as_user: false)
+    slack_web_client.chat_postMessage(channel: item['channel'], text: msg, username: 'esaise', icon_emoji: ':esaise:', as_user: false)
   end
 
   def fetch_message_for(item)
     # https://api.slack.com/methods/channels.history
-    channels_history = Slack.client.channels_history(
+    channels_history = slack_web_client.channels_history(
       channel: item['channel'],
       latest: item['ts'],
       oldest: item['ts'],
@@ -155,13 +161,31 @@ class Reaction
     channels_history['messages'].first
   end
 
+  def fetch_permalink_for(item)
+    slack_web_client.chat_getPermalink(
+      channel: item['channel'],
+      message_ts: item['ts'],
+    ).permalink
+  end
+
+  def notify_notify_all_reacted(item, emoji)
+    permalink = fetch_permalink_for(item)
+    slack_web_client.chat_postMessage(
+      channel: item['channel'],
+      text: "<!channel> This got 3 :#{emoji}: #{permalink}",
+      username: 'mannjouitti',
+      icon_emoji: ':mannjouitti:',
+      as_user: false
+    )
+  end
+
   def channel_name_for(channel_id)
-    channels_info = Slack.client.channels_info(channel: channel_id)
+    channels_info = slack_web_client.channels_info(channel: channel_id)
     channels_info['channel']['name']
   end
 
   def host
-    Slack.client.auth_test['url']
+    slack_web_client.auth_test['url']
   end
 
   def archives_link(channel_id, ts)
@@ -178,8 +202,8 @@ class Reaction
     end
   end
 
-  def slack_rest_client
-    @slack_rest_client ||= Slack::Client.new
+  def slack_web_client
+    @slack_web_client ||= Slack::Web::Client.new
   end
 
   def esa_client
@@ -195,9 +219,7 @@ class Reaction
   end
 end
 
-Thread.new do
-  Reaction.new.listen!
-end
+Reaction.new.listen!
 
 # for keep alive
 require 'sinatra'
