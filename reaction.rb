@@ -48,7 +48,7 @@ class Reaction
 
       all_reacted_reactions = message['reactions'].select { |r| r['count'] == 3 }
       if all_reacted_reactions.any? { |r| r['name'] == reaction_name }
-        notify_notify_all_reacted(item, reaction_name)
+        notify_notify_all_reacted(item, reaction_name, message['text'])
       end
 
       case reaction_name
@@ -168,11 +168,11 @@ class Reaction
     ).permalink
   end
 
-  def notify_notify_all_reacted(item, emoji)
+  def notify_notify_all_reacted(item, emoji, message)
     permalink = fetch_permalink_for(item)
     slack_web_client.chat_postMessage(
       channel: item['channel'],
-      text: "<!channel> This got 3 :#{emoji}: #{permalink}",
+      text: "<!channel> This got 3 :#{emoji}: #{permalink}\n#{message}",
       username: 'mannjouitti',
       icon_emoji: ':mannjouitti:',
       as_user: false
