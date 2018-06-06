@@ -23,10 +23,23 @@ class Reaction
     client.on :reaction_added do |data|
       on_reaction_added(data)
     end
+
+    client.on :close do
+      restart!
+    end
+
     client.start_async
   end
 
   private
+
+  def restart!(wait = 1)
+    listen!
+  rescue StandardError => e
+    sleep wait
+    puts "#{e.message}, reconnecting in #{wait} second(s)."
+    restart! [wait * 2, 60].min
+  end
 
   def on_reaction_added(data)
     puts '[on_reaction_added]'
