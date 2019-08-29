@@ -1,16 +1,15 @@
 source 'https://rubygems.org'
 
-ruby '2.5.1'
+ruby '2.6.4'
 
 gem 'twitter'
 gem 'redis'
 gem 'slack-notifier'
 gem 'slack-ruby-client'
 gem 'sinatra'
+gem 'rack-contrib'
 gem 'octokit'
 gem 'esa'
-gem 'eventmachine'
-gem 'faye-websocket'
 
 group :development do
   gem 'pry'
