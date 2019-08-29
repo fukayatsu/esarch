@@ -7,10 +7,9 @@ gem 'redis'
 gem 'slack-notifier'
 gem 'slack-ruby-client'
 gem 'sinatra'
+gem 'rack-contrib'
 gem 'octokit'
 gem 'esa'
-gem 'eventmachine'
-gem 'faye-websocket'
 
 group :development do
   gem 'pry'
