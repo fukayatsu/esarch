@@ -181,8 +181,8 @@ def notify_notify_all_reacted(item, emoji, message)
 end
 
 def channel_name_for(channel_id)
-  channels_info = slack_web_client.channels_info(channel: channel_id)
-  channels_info['channel']['name']
+  conversations_info = slack_web_client.conversations_info(channel: channel_id)
+  conversations_info['channel']['name']
 end
 
 def host
