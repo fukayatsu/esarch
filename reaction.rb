@@ -85,6 +85,7 @@ def on_reaction_added(data)
       puts "[favorited] #{message['text']}"
     end
   rescue => e
+    puts e.message
     puts e.backtrace.join("\n")
   end
 end
