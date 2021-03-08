@@ -151,14 +151,15 @@ def esaise(item, message)
 end
 
 def fetch_message_for(item)
-  # https://api.slack.com/methods/channels.history
-  channels_history = slack_web_client.channels_history(
+  # https://api.slack.com/methods/conversations.history
+  conversations_history = slack_web_client.conversations_history(
     channel: item['channel'],
     latest: item['ts'],
     oldest: item['ts'],
+    limit: 1,
     inclusive: 1
   )
-  channels_history['messages'].first
+  conversations_history['messages'].first
 end
 
 def fetch_permalink_for(item)
