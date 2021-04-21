@@ -39,7 +39,12 @@ def on_reaction_added(data)
     # ignore reaction for file
     return unless message['type'] == 'message'
 
-    status_ids = message['text'].scan(%r{twitter.com/\S+/status/(\d+)}).flatten
+    text_or_from_url = message['text'].to_s.strip
+    if text_or_from_url.empty?
+      text_or_from_url = Array(message['attachments']).find { |a| a.key?('from_url') }['from_url']
+    end
+
+    status_ids = text_or_from_url.scan(%r{twitter.com/\S+/status/(\d+)}).flatten
 
     print 'reaction_name: '
     # F**K: data.reaction for 1st emoji, data.reactions for rest
@@ -53,36 +58,36 @@ def on_reaction_added(data)
     case reaction_name
     when /no_/
       # Do not notify tweets from this user anymore
-      puts "[will ban] #{message['text']}"
+      puts "[will ban] #{text_or_from_url}"
       puts ban_users_from(status_ids)
-      puts "[banned] #{message['text']}"
+      puts "[banned] #{text_or_from_url}"
     when 'innocent'
       # Unban user
-      puts "[will unban] #{message['text']}"
+      puts "[will unban] #{text_or_from_url}"
       puts unban_users_from(status_ids)
-      puts "[unbanned] #{message['text']}"
+      puts "[unbanned] #{text_or_from_url}"
     when 'octocat'
-      puts "[will create issue] #{message['text']}"
+      puts "[will create issue] #{text_or_from_url}"
       create_issue_or_ignore_from(item['channel'], item['ts'], message, ENV['GITHUB_REPOSITORY'])
-      puts "[created issue] #{message['text']}"
+      puts "[created issue] #{text_or_from_url}"
     when 'esaise'
-      puts "[will esaise] #{message['text']}"
+      puts "[will esaise] #{text_or_from_url}"
       esaise(item, message)
-      puts "[esaised] #{message['text']}"
+      puts "[esaised] #{text_or_from_url}"
     when /kaesita|kaeshita/
-      puts "[will reply_done] #{message['text']}"
+      puts "[will reply_done] #{text_or_from_url}"
       reply_done
-      puts "[reply_done] #{message['text']}"
+      puts "[reply_done] #{text_or_from_url}"
     when 'rt', 'repeat', 'retweet'
       # ReTweet the tweet
-      puts "[will retweet] #{message['text']}"
+      puts "[will retweet] #{text_or_from_url}"
       retweet(status_ids)
-      puts "[retweeted] #{message['text']}"
+      puts "[retweeted] #{text_or_from_url}"
     else
       # Add favorite to the tweet
-      puts "[will favorite] #{message['text']}"
+      puts "[will favorite] #{text_or_from_url}"
       favorite(status_ids)
-      puts "[favorited] #{message['text']}"
+      puts "[favorited] #{text_or_from_url}"
     end
   rescue => e
     puts e.message
