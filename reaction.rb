@@ -7,7 +7,7 @@ require 'net/http'
 require 'sinatra'
 require 'rack/contrib'
 
-use Rack::PostBodyContentTypeParser
+use Rack::JSONBodyParser, media: /json/
 
 # Make it easy to check log on Papertrail addon
 $stdout.sync = true
