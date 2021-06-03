@@ -19,12 +19,14 @@ class Esarch
   private
 
   def search
-    tweets = twitter_client.search(SEARCH_QUERY,
-                                   lang:        'ja',
-                                   result_type: 'recent',
-                                   count:       BATCH_SIZE,
-                                   since_id:    since_id)
-    tweets.take(BATCH_SIZE)
+    twitter_client.search(
+      SEARCH_QUERY,
+      lang:        'ja',
+      result_type: 'recent',
+      tweet_mode:  'extended',
+      count:       BATCH_SIZE,
+      since_id:    since_id
+    ).take(BATCH_SIZE)
   end
 
   def notify(tweets)
