@@ -44,9 +44,10 @@ def on_reaction_added(data)
 
     status_ids = text_or_from_url.scan(%r{twitter.com/\S+/status/(\d+)}).flatten
 
-    print 'reaction_name: '
     # F**K: data.reaction for 1st emoji, data.reactions for rest
-    puts reaction_name = data['reaction'] || data['reactions'].last['name']
+    reaction_name = data['reaction'] || data['reactions'].last['name']
+    puts "reaction_name: #{reaction_name}"
+
 
     all_reacted_reactions = message['reactions'].select { |r| r['count'] == 3 }
     if all_reacted_reactions.any? { |r| r['name'] == reaction_name }
@@ -60,7 +61,8 @@ def on_reaction_added(data)
       puts ban_users_from(status_ids)
       puts "[banned] #{text_or_from_url}"
     when 'wastebasket' # test
-      remove_attachments_of(item)
+      remove_attachments_of(item, text: message['text'])
+      puts 'remove_attachments done'
     when 'test_tube'
       slack_bot_client.chat_postMessage(channel: item['channel'], text: 'msg by bot token')
       slack_user_client.chat_postMessage(channel: item['channel'], text: 'msg by user token')
@@ -159,11 +161,11 @@ def esaise(item, message)
   slack_bot_client.chat_postMessage(channel: item['channel'], text: msg)
 end
 
-def remove_attachments_of(item)
+def remove_attachments_of(item, text: nil)
   slack_bot_client.chat_update(
     channel: item['channel'],
     ts: item['ts'],
-    # text: '(deleted)',
+    text: text,
     attachments: [{ "text": "(deleted)" }]
   )
 end
