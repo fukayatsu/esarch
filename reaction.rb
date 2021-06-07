@@ -61,6 +61,8 @@ def on_reaction_added(data)
       puts "[will ban] #{text_or_from_url}"
       puts ban_users_from(status_ids)
       puts "[banned] #{text_or_from_url}"
+
+      remove_attachments_of(item)
     when 'innocent'
       # Unban user
       puts "[will unban] #{text_or_from_url}"
@@ -153,6 +155,14 @@ def esaise(item, message)
     msg = posts_result.body['posts'].map{ |post| "#{post['full_name']} #{post['url']}" }.join("\n")
   end
   slack_web_client.chat_postMessage(channel: item['channel'], text: msg, username: 'esaise', icon_emoji: ':esaise:', as_user: false)
+end
+
+def remove_attachments_of(item)
+  slack_web_client.chat_update(
+    channel: item['channel'],
+    ts: item['ts'],
+    attachments: []
+  )
 end
 
 def fetch_message_for(item)
