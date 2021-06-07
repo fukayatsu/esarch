@@ -61,8 +61,8 @@ def on_reaction_added(data)
       remove_attachments_of(item)
     when 'test_tube'
       slack_bot_client.chat_postMessage(channel: item['channel'], text: 'msg by bot token')
-    when 'man'
       slack_user_client.chat_postMessage(channel: item['channel'], text: 'msg by user token')
+      puts "test tube done"
     when 'innocent'
       # Unban user
       puts "[will unban] #{text_or_from_url}"
@@ -161,8 +161,8 @@ def remove_attachments_of(item)
   slack_bot_client.chat_update(
     channel: item['channel'],
     ts: item['ts'],
-    text: '(deleted)',
-    # attachments: [{ "text": "(deleted)" }]
+    # text: '(deleted)',
+    attachments: [{ "text": "(deleted)" }]
   )
 end
 
