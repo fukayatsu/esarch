@@ -37,7 +37,9 @@ def on_reaction_added(data)
 
     text_or_from_url = message['text'].to_s.strip
     if text_or_from_url.empty?
-      text_or_from_url = Array(message['attachments']).find { |a| a.key?('from_url') }['from_url']
+      from_url_attachment = Array(message['attachments']).find { |a| a.key?('from_url') }
+
+      text_or_from_url = from_url_attachment['from_url'] if from_url_attachment
     end
 
     status_ids = text_or_from_url.scan(%r{twitter.com/\S+/status/(\d+)}).flatten
