@@ -161,7 +161,8 @@ def remove_attachments_of(item)
   slack_web_client.chat_update(
     channel: item['channel'],
     ts: item['ts'],
-    text: '(deleted)'
+    text: '(deleted)',
+    as_user: false,
     # attachments: [{ "text": "(deleted)" }]
   )
 end
