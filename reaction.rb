@@ -162,7 +162,7 @@ def remove_attachments_of(item)
     channel: item['channel'],
     ts: item['ts'],
     text: '(deleted)',
-    as_user: false,
+    as_user: true,
     # attachments: [{ "text": "(deleted)" }]
   )
 end
