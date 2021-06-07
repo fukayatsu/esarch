@@ -158,7 +158,12 @@ def esaise(item, message)
 end
 
 def remove_attachments_of(item)
-  slack_web_client.chat_postMessage(channel: item['channel'], text: 'test', as_user: false)
+  puts item
+  slack_web_client.chat_postMessage(
+    channel: item['channel'],
+    text: 'test',
+    # as_user: false
+  )
 
   slack_web_client.chat_update(
     channel: item['channel'],
