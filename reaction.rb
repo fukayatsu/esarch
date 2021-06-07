@@ -162,7 +162,7 @@ def remove_attachments_of(item)
     channel: item['channel'],
     ts: item['ts'],
     attachments: [],
-    as_user: true
+    as_user: false
   )
 end
 
