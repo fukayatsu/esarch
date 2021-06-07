@@ -60,6 +60,14 @@ def on_reaction_added(data)
       puts "[will ban] #{text_or_from_url}"
       puts ban_users_from(status_ids)
       puts "[banned] #{text_or_from_url}"
+
+      begin
+        remove_attachments_of(item, text: message['text'])
+      rescue => e
+        puts "error on remove_attachments"
+        puts e.message
+        puts e.backtrace.join("\n")
+      end
     when 'wastebasket' # test
       remove_attachments_of(item, text: message['text'])
       puts 'remove_attachments done'
