@@ -27,8 +27,9 @@ IGNORE_WORD:                 sushi
 REDIS_URL:                   redis://xxx
 REQUIRED_REGEX:              sushi
 SEARCH_QUERY:                (sushi OR sushi.io OR sushi_io OR #sushi_io OR #sushi) -rt
-SLACK_TOKEN:                 xoxp-xxx-xxx-xxx-xxx
-SLACK_WEBHOOK_URL:           https://hooks.slack.com/services/xxx/yyy/zzz
+SLACK_USER_TOKEN:            xoxp-xxx-xxx-xxx-xxx
+SLACK_BOT_TOKEN:             xoxb-xxx-xxx-xxx-xxx
+SLACK_CHANNEL:               C1234567
 TABOO_NAME_REGEX:            sushi
 TABOO_WORDS:                 SUSHI,sushi.int,酢市
 TWITTER_ACCESS_TOKEN:        xxx

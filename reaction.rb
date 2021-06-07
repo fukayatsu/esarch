@@ -12,10 +12,6 @@ use Rack::JSONBodyParser, media: /json/
 # Make it easy to check log on Papertrail addon
 $stdout.sync = true
 
-Slack.configure do |config|
-  config.token = ENV['SLACK_TOKEN']
-end
-
 set :port, ENV['PORT'] || 4567
 get '/' do
   'ok'
@@ -61,8 +57,12 @@ def on_reaction_added(data)
       puts "[will ban] #{text_or_from_url}"
       puts ban_users_from(status_ids)
       puts "[banned] #{text_or_from_url}"
-
+    when 'wastebasket' # test
       remove_attachments_of(item)
+    when 'test_tube'
+      slack_bot_client.chat_postMessage(channel: item['channel'], text: 'msg by bot token')
+    when 'man'
+      slack_user_client.chat_postMessage(channel: item['channel'], text: 'msg by user token')
     when 'innocent'
       # Unban user
       puts "[will unban] #{text_or_from_url}"
@@ -154,29 +154,21 @@ def esaise(item, message)
   else
     msg = posts_result.body['posts'].map{ |post| "#{post['full_name']} #{post['url']}" }.join("\n")
   end
-  slack_web_client.chat_postMessage(channel: item['channel'], text: msg, username: 'esaise', icon_emoji: ':esaise:', as_user: false)
+  slack_bot_client.chat_postMessage(channel: item['channel'], text: msg)
 end
 
 def remove_attachments_of(item)
-  puts item
-  slack_web_client.chat_postMessage(
-    channel: item['channel'],
-    text: 'test',
-    # as_user: false
-  )
-
-  slack_web_client.chat_update(
+  slack_bot_client.chat_update(
     channel: item['channel'],
     ts: item['ts'],
     text: '(deleted)',
-    as_user: true,
     # attachments: [{ "text": "(deleted)" }]
   )
 end
 
 def fetch_message_for(item)
   # https://api.slack.com/methods/conversations.history
-  conversations_history = slack_web_client.conversations_history(
+  conversations_history = slack_user_client.conversations_history(
     channel: item['channel'],
     latest: item['ts'],
     oldest: item['ts'],
@@ -187,7 +179,7 @@ def fetch_message_for(item)
 end
 
 def fetch_permalink_for(item)
-  slack_web_client.chat_getPermalink(
+  slack_user_client.chat_getPermalink(
     channel: item['channel'],
     message_ts: item['ts'],
   ).permalink
@@ -195,22 +187,19 @@ end
 
 def notify_notify_all_reacted(item, emoji, message)
   permalink = fetch_permalink_for(item)
-  slack_web_client.chat_postMessage(
+  slack_bot_client.chat_postMessage(
     channel: item['channel'],
     text: "<!channel> This got 3 :#{emoji}: #{permalink}\n#{message}",
-    username: 'mannjouitti',
-    icon_emoji: ':mannjouitti:',
-    as_user: false
   )
 end
 
 def channel_name_for(channel_id)
-  conversations_info = slack_web_client.conversations_info(channel: channel_id)
+  conversations_info = slack_user_client.conversations_info(channel: channel_id)
   conversations_info['channel']['name']
 end
 
 def host
-  slack_web_client.auth_test['url']
+  slack_user_client.auth_test['url']
 end
 
 def archives_link(channel_id, ts)
@@ -227,8 +216,16 @@ def twitter_client
   end
 end
 
-def slack_web_client
-  @slack_web_client ||= Slack::Web::Client.new
+def slack_user_client
+  @slack_user_client ||= Slack::Web::Client.new(
+    token: ENV['SLACK_USER_TOKEN']
+  )
+end
+
+def slack_bot_client
+  @slack_bot_client ||= Slack::Web::Client.new(
+    token: ENV['SLACK_BOT_TOKEN']
+  )
 end
 
 def esa_client

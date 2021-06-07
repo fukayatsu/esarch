@@ -4,7 +4,6 @@ ruby '2.7.3'
 
 gem 'twitter'
 gem 'redis'
-gem 'slack-notifier'
 gem 'slack-ruby-client'
 gem 'sinatra'
 gem 'rack-contrib'

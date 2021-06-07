@@ -1,6 +1,6 @@
 require 'twitter'
 require 'redis'
-require 'slack-notifier'
+require 'slack'
 
 class Esarch
   SEARCH_QUERY     = ENV['SEARCH_QUERY']
@@ -36,9 +36,8 @@ class Esarch
   def notify_or_ignore(tweet)
     return if should_ignore?(tweet)
     puts "#{tweet.url} #{tweet.text}"
-    slack_notifier.ping(tweet.url.to_s,
-                        icon_url: tweet.user.profile_image_url.to_s,
-                        username: tweet.user.screen_name)
+
+    slack_bot_client.chat_postMessage(channel: ENV["SLACK_CHANNEL"], text: tweet.url.to_s)
   end
 
   def should_ignore?(tweet)
@@ -75,8 +74,10 @@ class Esarch
     end
   end
 
-  def slack_notifier
-    @slack_notifier ||= Slack::Notifier.new ENV['SLACK_WEBHOOK_URL']
+  def slack_bot_client
+    @slack_bot_client ||= Slack::Web::Client.new(
+      token: ENV['SLACK_BOT_TOKEN']
+    )
   end
 
   def redis

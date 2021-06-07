@@ -80,7 +80,6 @@ GEM
       rack (~> 2.2)
       rack-protection (= 2.1.0)
       tilt (~> 2.0)
-    slack-notifier (2.4.0)
     slack-ruby-client (0.17.0)
       faraday (>= 1.0)
       faraday_middleware
@@ -117,7 +116,6 @@ DEPENDENCIES
   rack-contrib
   redis
   sinatra
-  slack-notifier
   slack-ruby-client
   twitter
 
